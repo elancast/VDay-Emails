@@ -30,7 +30,7 @@ UPDATE 2/17: Added National Geographic's photo of the day + r/pokemon. I still l
 <br><br>
 UPDATE 6/11: Fixed XKCD. They took the transcript out of their HTML :(. Also link to imgur albums in r/zelda. Changed emails. Moved to CS server soak! :D
 <br><br>
-UPDATE 6/14: Hello <a href="https://github.com/elancast/VDay-Emails">github</a>.
+UPDATE 6/14: Hello <a href="https://github.com/elancast/VDay-Emails">github</a>. Added Flickr as a source of images. Still love you, Rafiiii!
 </span>
 </td></tr>
 <tr><td>
