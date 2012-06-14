@@ -29,6 +29,8 @@ I love you! Hope you enjoy!
 UPDATE 2/17: Added National Geographic's photo of the day + r/pokemon. I still love you! Enjoy! &lt;3
 <br><br>
 UPDATE 6/11: Fixed XKCD. They took the transcript out of their HTML :(. Also link to imgur albums in r/zelda. Changed emails. Moved to CS server soak! :D
+<br><br>
+UPDATE 6/14: Hello <a href="https://github.com/elancast/VDay-Emails">github</a>.
 </span>
 </td></tr>
 <tr><td>
