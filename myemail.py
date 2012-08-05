@@ -47,7 +47,7 @@ def getSubject():
 cnt = getSmtp('/u/elancast/v/.shhhh')
 (text, html) = getContent()
 msg = getmsg(text, html)
-to = "Rafraf Romero <rgromero.princeton@gmail.com>"
+to = "Rafraf Romero <MultiRRomero@gmail.com>"
 megmil = "Emily Lancaster <elancast0421@gmail.com>"
 me = "Emily Lancaster <elancast@cs.princeton.edu>"
 subj = getSubject()
