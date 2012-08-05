@@ -80,14 +80,15 @@ class HtmlFormer:
     def getHtml(self):
         return self.html
 
-    def goToTheInternets(self, url, sleep=True):
+    def goToTheInternets(self, url, sleep=True, count=1):
         if sleep: time.sleep(3)
         try:
             return urllib.urlopen(url).read()
         except:
             print "CALL FAILED. RETRYING"
+            if count > 3: return ''
             time.sleep(3)
-            return self.goToTheInternets(url)
+            return self.goToTheInternets(url, sleep, count + 1)
 
     def getFormattedTitle(self, text):
         st = 'color:#483D8B;'
