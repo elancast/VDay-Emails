@@ -21,12 +21,13 @@ def setMeta(msg, subject, to, fro, cc=None):
     if cc != None: msg['CC'] = cc; addrs.append(cc)
     return addrs
 
-def getSmtp(file, host="smtp.princeton.edu", port=587):
+def getSmtp(file, host="smtp.cs.princeton.edu", port=587):
     a = smtplib.SMTP(host, port)
     f = open(file, 'r')
     creds = map(lambda x: x.strip(), f.readlines())
-    a.login(creds[0], creds[1])
+    a.ehlo()
     a.starttls()
+    a.login(creds[0], creds[1])
     return a
 
 def getContent():
