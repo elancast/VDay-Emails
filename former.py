@@ -2,7 +2,7 @@ import urllib
 import time
 
 MESSAGE = """
-<table width="100%" cellpadding="0" cellspacing="0" bgcolor="B0C4DE"><tr><td>\n
+<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffeedd"><tr><td>\n
 
 <table bgcolor="white" cellpadding="0" style="font-family: Helvetica; margin-top: 12px; text-align: center;" width="650px" align="center">
 <tr><td>
@@ -294,7 +294,7 @@ class HtmlFormer:
             title = self.getFormattedTitle('Today\'s Bing picture is...')
             print 'got bing'
             return '%s%s<br><br><a href=%s><img src="%s" width=300 title="%s" /></a>' \
-                % (title, desc, bing, url, desc)
+                % (title, desc, url, url, desc)
         return ''
 
     def getAstronomyVideoThoseFuckers(self, s):
