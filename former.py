@@ -1,95 +1,26 @@
 import urllib
 import time
 
-MESSAGE = """
-<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffeedd"><tr><td>\n
-
-<table bgcolor="white" cellpadding="0" style="font-family: Helvetica; margin-top: 12px; text-align: center;" width="650px" align="center">
-<tr><td>
-<br><br>
-</td></tr>
-<tr><td>
-<h1 style="color:483D8B;">
-<img height=30 src="http://i374.photobucket.com/albums/oo182/sikuljak/heart/th_red_heart.png">
-Happy Email Time, Rafi!
-<img height=30 src="http://i374.photobucket.com/albums/oo182/sikuljak/heart/th_red_heart.png">
-</h1>
-</td></tr>
-<tr><td align="center">
-<div style="width:500px; text-align:center;">
-Hey Rafraf! If this is the first email you're seeing, then...
-<br> <span style="color:red;"><b>Happy Valentine's Day</b></span>!<br><br>
-This is going to be a daily email reminding you that I love youuu!
-And it also attempts to update you on some of the things you enjoy, including aww reddit, xkcd, and puns.
-Check it out! Today, and then tomorrow, and then the next day, and the next, and then forever after that!
-Well, until I lose permission to hats...
-<br><br>
-I love you! Hope you enjoy!
-<br><br>
-UPDATE 2/17: Added National Geographic's photo of the day + r/pokemon. I still love you! Enjoy! &lt;3
-<br><br>
-UPDATE 6/11: Fixed XKCD. They took the transcript out of their HTML :(. Also link to imgur albums in r/zelda. Changed emails. Moved to CS server soak! :D
-<br><br>
-UPDATE 6/14: Hello <a href="https://github.com/elancast/VDay-Emails">github</a>. Added Flickr as a source of images. Still love you, Rafiiii!
-<br><br>
-UPDATE 10/7: Changed email address since Princeton died and added Bing text.
-</span>
-</td></tr>
-<tr><td>
-<br><br>
-</td></tr>
-</table>
-
-<table bgcolor="ffffff" cellpadding="12" style="font-family: Helvetica; margin-bottom:20px; margin-top: 12px;" width="324px" align="center">
-
-<tr><td>
-<br><br>
-</td></tr>
-"""
-
-testhtml = """\
-<html>
-  <head></head>
-  <body>
-    <p>Hi!<br>
-       How are you?<br>
-       Here is the <a href="http://www.python.org">link</a> you wanted.<br>
-<span style='font-family:"Courier New";'>
-Here is an image:</span><br>
-<img src='http://d21c.com/walpurgis9/happies/faces/004.gif'>
-    </p>
-<br><br><br><br><br>
-<table>
-<tr>
-<td>hello</td>
-<td> this is another column yea tables do yo thang</td>
-</tr>
-<tr>
-<td>hello from row 2</td>
-<td>nom nom nom</td>
-</tr>
-</table>
-  </body>
-</html>
-"""
+HTML_TEMPLATE_FILE = 'email.html'
+SLEEP_TIME_BETWEEN = 3
+SLEEP_TIME_ERROR = 10
 
 class HtmlFormer:
     def __init__(self, giveTest=True, grrr=True):
-        self.html = testhtml
+        self.html = ''
         self._formEmail()
-        #self.html = "<b>Deprecated.</b> <i>This email does not properly capture Rafi's attention. As of 23 Apr 2012, the preferred way to do this is via a command-line program."
 
     def getHtml(self):
         return self.html
 
     def goToTheInternets(self, url, sleep=True, count=1):
-        if sleep: time.sleep(3)
+        if sleep: time.sleep(SLEEP_TIME_BETWEEN)
         try:
             return urllib.urlopen(url).read()
         except:
             print "CALL FAILED. RETRYING"
             if count > 3: return ''
-            time.sleep(3)
+            time.sleep(SLEEP_TIME_ERROR)
             return self.goToTheInternets(url, sleep, count + 1)
 
     def getFormattedTitle(self, text):
@@ -249,7 +180,7 @@ class HtmlFormer:
         s = self.goToTheInternets(url)
         while "<title>Too Many Requests</title>" in s:
             print "REDDIT WAS A JERKFACE"
-            time.sleep(10)
+            time.sleep(SLEEP_TIME_ERROR)
             s = self.goToTheInternets(url)
         return s
 
@@ -437,6 +368,12 @@ class HtmlFormer:
         it = '<a href="%s"><img src="%s" title="%s" width=300 /></a>' % (img, img, caption)
         return '%s%s<br><br>%s' % (title, caption, it)
 
+    def getTemplate(self):
+        f = open(HTML_TEMPLATE_FILE, 'r')
+        s = f.read()
+        f.close()
+        return s
+
     """ Calls the different functions necessary to generate all of the
     HTML and then forms the HTML document """
     def _formEmail(self):
@@ -455,7 +392,7 @@ class HtmlFormer:
             else: htmls += ret
 
         # Starter html for top of page
-        html = MESSAGE
+        html = self.getTemplate()
 
         # Fill in the table
         i = 0
