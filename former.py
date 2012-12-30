@@ -1,9 +1,15 @@
 import urllib
 import time
 
+ASTRO_URL = 'http://apod.nasa.gov/apod/'
+BING_URL = 'http://feeds.feedburner.com/bingimages'
+NAT_GEO_URL = 'http://photography.nationalgeographic.com/photography/photo-of-the-day/'
+PUN_URL = 'http://feeds.feedburner.com/PunOfTheDay'
+XKCD_URL = "http://xkcd.com/"
+
 HTML_TEMPLATE_FILE = 'email.html'
-SLEEP_TIME_BETWEEN = 0
-SLEEP_TIME_ERROR = 1
+SLEEP_TIME_BETWEEN = 3
+SLEEP_TIME_ERROR = 10
 
 class HtmlFormer:
   def __init__(self, giveTest=True, grrr=True):
@@ -29,8 +35,7 @@ class HtmlFormer:
 
   """ Returns XKCD html """
   def getXkcdHtml(self):
-    url = "http://xkcd.com/"
-    s = self.goToTheInternets(url)
+    s = self.goToTheInternets(XKCD_URL)
     full = s
     try:
       s = s[s.index('id="comic"'):]
@@ -47,7 +52,7 @@ class HtmlFormer:
       end = full.index('<', start)
       url = full[start : end].strip()
     else:
-      url = 'http://xkcd.com'
+      url = XKCD_URL
 
     place = s.index(' ')
     insert = 'width=300'
@@ -164,11 +169,13 @@ class HtmlFormer:
       if i == maxPics: return htmls
       i += 1
       (url, reddit, title) = x[:3]
-      img = '<a href="%s"><img src="%s" title="%s" width=300 /></a>' % (url, url, title)
+      img = '<a href="%s"><img src="%s" title="%s" width=300 /></a>'\
+          % (url, url, title)
       if len(x) > 3 and x[3]:
         img = img.replace('img src', 'a href')
         img = img.replace('/>', '>Check out the imgur album!</a>')
-      descr = 'Read Reddit\'s take on this image <a href="%s">here</a>.<br><br>' % reddit
+      descr = 'Read Reddit\'s take on this image <a href="%s">here</a>.%s'\
+          % (reddit, '<br><br>')
       if len(x) > 4 and x[4] != None:
         add = 'You can also view its Flickr page <a href="%s">here</a>.' % x[4]
         descr = descr.replace('.<br', '. %s<br' % add)
@@ -197,8 +204,7 @@ class HtmlFormer:
 
   """ Returns the bing picture """
   def getBing(self):
-    url = "http://feeds.feedburner.com/bingimages"
-    s = self.goToTheInternets(url)
+    s = self.goToTheInternets(BING_URL)
     tag = '![CDATA['
     while tag in s:
       start = s.index(tag) + len(tag)
@@ -221,7 +227,6 @@ class HtmlFormer:
       url = part[start : end]
 
       # HTML!
-      bing = '"http://www.bing.com/"'
       title = self.getFormattedTitle('Today\'s Bing picture is...')
       print 'got bing'
       return '%s%s<br><br><a href=%s><img src="%s" width=300 title="%s" /></a>'\
@@ -237,8 +242,8 @@ class HtmlFormer:
     return (s[start:end], end)
 
   def getAstronomy(self):
-    url = 'http://apod.nasa.gov/apod/'; tag = 'IMG SRC="'
-    s = self.goToTheInternets(url)
+    tag = 'IMG SRC="'
+    s = self.goToTheInternets(ASTRO_URL)
 
     # Videos goddammit...
     vid = False
@@ -253,7 +258,7 @@ class HtmlFormer:
       start = s.index(tag) + len(tag)
       end = s.index('"', start)
       url = s[start : end]
-      if not 'http://' in url: url = 'http://apod.nasa.gov/apod/' +url
+      if not 'http://' in url: url = ASTRO_URL + url
 
       # Get the description
       tag = '<b>'
@@ -265,10 +270,11 @@ class HtmlFormer:
       start = s.index('?date=') + len('?date=')
       end = s.index('"', start)
       date = s[start : end]
-      perma = 'http://apod.nasa.gov/apod/ap%s.html' % date
+      perma = '%sap%s.html' % (ASTRO_URL, date)
 
       # Do it!
-      start = self.getFormattedTitle('Today\'s Astronomy Picture of the Day is...')
+      start = self.getFormattedTitle(
+        'Today\'s Astronomy Picture of the Day is...')
       if not vid:
         img = '<a href="%s"><img src="%s" title="%s" width=300 /></a>' % \
             (perma, url, descr)
@@ -279,14 +285,14 @@ class HtmlFormer:
 
   """ Returns a pun from a daily pun site """
   def getPun(self):
-    url = 'http://feeds.feedburner.com/PunOfTheDay'
-    s = self.goToTheInternets(url)
+    s = self.goToTheInternets(PUN_URL)
     s = s[s.index('<item>'):]
     tag = '<description>'
     start = s.index(tag) + len(tag)
     end = s.index('&lt;', start)
     pun = s[start : end]
-    msg = 'Puns stolen from <a href="http://www.punoftheday.com/">Pun of the Day</a>.'
+    msg = 'Puns stolen from <a href="http://www.punoftheday.com/">%s</a>.'\
+        % 'Pun of the Day'
     title = self.getFormattedTitle('Today\'s daily pun is...')
     print "got pun"
     return '%s%s<br><br>%s<br>' % (title, pun, msg)
@@ -347,8 +353,7 @@ class HtmlFormer:
     return a
 
   def getNatGeo(self):
-    url = 'http://photography.nationalgeographic.com/photography/photo-of-the-day/'
-    s = self.goToTheInternets(url)
+    s = self.goToTheInternets(NAT_GEO_URL)
     s = s[s.index('primary_photo'):]
 
     # The image
@@ -365,7 +370,8 @@ class HtmlFormer:
 
     # Form stuff and return
     title = self.getFormattedTitle('Today\'s National Geographic picture is...')
-    it = '<a href="%s"><img src="%s" title="%s" width=300 /></a>' % (img, img, caption)
+    it = '<a href="%s"><img src="%s" title="%s" width=300 /></a>'\
+        % (img, img, caption)
     return '%s%s<br><br>%s' % (title, caption, it)
 
   def getTemplate(self):
