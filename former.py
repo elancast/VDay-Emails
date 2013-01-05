@@ -12,7 +12,7 @@ SLEEP_TIME_BETWEEN = 3
 SLEEP_TIME_ERROR = 10
 
 class HtmlFormer:
-  def __init__(self, giveTest=True, grrr=True):
+  def __init__(self):
     self.html = ''
     self._formEmail()
 
@@ -272,16 +272,40 @@ class HtmlFormer:
       date = s[start : end]
       perma = '%sap%s.html' % (ASTRO_URL, date)
 
-      # Do it!
-      start = self.getFormattedTitle(
-        'Today\'s Astronomy Picture of the Day is...')
-      if not vid:
-        img = '<a href="%s"><img src="%s" title="%s" width=300 /></a>' % \
-            (perma, url, descr)
-      else:
-        img = '<a href="%s">%s</a>' % (url, descr)
+    # Also get some text about the image
+    desc = ''
+    marker = '<b> Explanation: </b>'
+    if marker in s:
+      start = s.index(marker) + len(marker)
+      end = s.index('Tomorrow\'s picture:', start)
+      desc = self.stripTags(s[start : end])
+      print 'Tagless: %s' % desc
+      if '.' in desc:
+        desc = desc[:desc.index('.') + 1]
+      print 'Final: %s' % desc
+      desc = '%s<br><br>' % desc
+
+    # Do it!
+    title = self.getFormattedTitle(
+      'Today\'s Astronomy Picture of the Day is...')
+    if not vid:
+      img = '<a href="%s"><img src="%s" title="%s" width=300 /></a>' % \
+          (perma, url, descr)
+    else:
+      img = '<a href="%s">%s</a>' % (url, descr)
     print 'got astronomy'
-    return start + img
+    return title + desc + img
+
+  def stripTags(self, s):
+    ret = []; i = 0
+    while i < len(s):
+      if s[i] == '<':
+        while i < len(s) and s[i] != '>': i += 1
+        ret.append(' ')
+      else:
+        ret.append(s[i])
+      i += 1
+    return ''.join(ret).strip()
 
   """ Returns a pun from a daily pun site """
   def getPun(self):
