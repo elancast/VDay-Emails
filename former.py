@@ -1,3 +1,4 @@
+import os, sys
 import urllib
 import time
 
@@ -399,7 +400,8 @@ class HtmlFormer:
     return '%s%s<br><br>%s' % (title, caption, it)
 
   def getTemplate(self):
-    f = open(HTML_TEMPLATE_FILE, 'r')
+    filename = os.path.join(os.path.dirname(sys.argv[0]), HTML_TEMPLATE_FILE)
+    f = open(filename, 'r')
     s = f.read()
     f.close()
     return s
