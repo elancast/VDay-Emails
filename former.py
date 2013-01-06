@@ -352,20 +352,20 @@ class HtmlFormer:
         url = url[:len(url) - 4]
         isAlbum = True
 
-        # Find the title
-        ta = '<title>'
-        start = part.index(ta) + len(ta)
-        end = part.index('</title', start)
-        title = part[start : end].strip()
+      # Find the title
+      ta = '<title>'
+      start = part.index(ta) + len(ta)
+      end = part.index('</title', start)
+      title = part[start : end].strip()
 
-        # Reddit link
-        ta = '<link>'
-        start = part.index(ta) + len(ta)
-        end = part.index("</", start)
-        link = part[start : end].strip()
+      # Reddit link
+      ta = '<link>'
+      start = part.index(ta) + len(ta)
+      end = part.index("</", start)
+      link = part[start : end].strip()
 
-        # Append! (can call above code yay)
-        poss.append( (url, link, title, isAlbum) )
+      # Append! (can call above code yay)
+      poss.append( (url, link, title, isAlbum) )
     print 'got zelda %d %d' % (len(poss), len(s))
     return self.convertRedditImgsToHtml(poss)
 
