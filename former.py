@@ -301,7 +301,6 @@ class HtmlFormer:
     while i < len(s):
       if s[i] == '<':
         while i < len(s) and s[i] != '>': i += 1
-        ret.append(' ')
       else:
         ret.append(s[i])
       i += 1
