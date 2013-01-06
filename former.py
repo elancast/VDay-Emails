@@ -280,10 +280,8 @@ class HtmlFormer:
       start = s.index(marker) + len(marker)
       end = s.index('Tomorrow\'s picture:', start)
       desc = self.stripTags(s[start : end])
-      print 'Tagless: %s' % desc
       if '.' in desc:
         desc = desc[:desc.index('.') + 1]
-      print 'Final: %s' % desc
       desc = '%s<br><br>' % desc
 
     # Do it!
