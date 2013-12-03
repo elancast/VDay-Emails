@@ -1,5 +1,6 @@
 import os, sys
 import urllib
+import json
 import time
 
 ASTRO_URL = 'http://apod.nasa.gov/apod/'
@@ -62,106 +63,6 @@ class HtmlFormer:
     print 'got xkcd'
     return '%s<a href="%s">%s</a>' % (title, url, img)
 
-  def getFlickrImageLink(self, part):
-    # Get the URL to go to... (blegh)
-    url = 'www.flickr.com'
-    if not url in part: return None
-    start = part.index(url)
-    if '&#34;' in part[start:]: end = part.index('&#34;', start)
-    elif '"' in part[start:]: end = part.index('"', start)
-    else: return None
-    url = 'http://' + part[start : end]
-
-    # Open it...
-    s = self.goToTheInternets(url, sleep=False)
-
-    # Nice tag. So nice. It's a big, downloadable image. Yay!
-    tag = '<div id="allsizes-photo">'
-    if tag in s:
-      start = s.index(tag)
-      tag = 'src="'
-      start = s.index(tag, start) + len(tag)
-      end = s.index('"', start)
-      return (url, s[start : end])
-
-    # Look for tag
-    tag = 'rel="image_src"'
-    if not tag in s: return None
-    start = s.index(tag)
-    tag = 'href="'
-    start = s.index(tag, start) + len(tag)
-    end = s.index('"', start)
-    happy = s[start : end]
-
-    # Find the larger image link
-    options = [ '_b.jpg', '_o.jpg', '_c.jpg', '_z.jpg', '_m.jpg' ]
-    if options[-1] in happy:
-      ind = 0
-      for ind in range(len(options)):
-        happy = happy.replace(options[ind - 1], options[ind])
-        if happy in s: break
-        print 'tried ' + options[ind] + ' and no go :('
-      return (url, happy)
-
-  """ Returns the title of the reddit link """
-  def getRedditPartTitle(self, part, link):
-    tag = 'title=&#34;'
-    if not tag in part: return None
-    start = part.index(tag) + len(tag)
-    if '&#34;' in part[start:]: end = part.index('&#34;', start)
-    elif '"' in part[start:]: end = part.index('"', start)
-    else: return None
-    title = part[start : end]
-    if "Porn" in link and '[' in title:
-      title = title[:title.index('[')].strip()
-    return title
-
-  """ Returns the imgur link from the reddit part """
-  def getImgurImageLink(self, part):
-    if not 'imgur.com/' in part: return None
-    if 'imgur.com/a/' in part: return None
-    cut = part.index('imgur.com/')
-    start = part.index('/', cut) + 1
-    end = start
-    while part[end] != '.' and part[end] != '&': end += 1
-    url = 'http://imgur.com/%s.jpg' % part[start : end]
-    return url
-
-  """ Parses out all of the images from the string provided """
-  def getRedditImages(self, s, link):
-    (st, en) = ('<description>', '</description>')
-    poss = []
-    while st in s:
-      if len(poss) >= 4: break
-      start = s.index(st) + len(st)
-      end = s.index(en, start + 1)
-      part = s[start : end]
-      s = s[end:]
-
-      # Check imgur...
-      (flickrPage, img) = (None, None)
-      img = self.getImgurImageLink(part)
-
-      # Check flickr...
-      flickr = self.getFlickrImageLink(part)
-      if flickr != None: (flickrPage, img) = flickr
-      if img == None: continue
-
-      # Get reddit link
-      start = part.index(link)
-      if '&#34;' in part[start:]: end = part.index('&#34;', start)
-      elif '"' in part[start:]: end = part.index('"', start)
-      else: continue
-      reddit = part[start : end]
-
-      # Get the title
-      title = self.getRedditPartTitle(part, link)
-      if title == None: continue
-
-      # Yayyy
-      poss.append( (img, reddit, title, False, flickrPage) )
-    return self.convertRedditImgsToHtml(poss)
-
   """ Takes the data from poss which is r/awww to convert to html """
   def convertRedditImgsToHtml(self, poss):
     maxPics = 3; i = 0
@@ -184,24 +85,9 @@ class HtmlFormer:
       htmls.append(''.join(html))
     return htmls
 
-  def getFromReddit(self, url):
-    s = self.goToTheInternets(url)
-    while "<title>Too Many Requests</title>" in s:
-      print "REDDIT WAS A JERKFACE"
-      time.sleep(SLEEP_TIME_ERROR)
-      s = self.goToTheInternets(url)
-    return s
-
-  def getRedditStuff(self, urlstart):
-    s = self.getFromReddit(urlstart + ".rss")
-    return self.getRedditImages(s, urlstart)
-
   """ Returns some html from aww reddit """
   def getAww(self):
-    urlstart = "http://www.reddit.com/r/aww/"
-    a = self.getRedditStuff(urlstart)
-    print 'got aww'
-    return a
+    return self.getSubreddit('aww')
 
   """ Returns the bing picture """
   def getBing(self):
@@ -320,59 +206,48 @@ class HtmlFormer:
     return '%s%s<br><br>%s<br>' % (title, pun, msg)
 
   def getEarthPorn(self):
-    urlstart = "http://www.reddit.com/r/EarthPorn/"
-    a = self.getRedditStuff(urlstart)
-    print "got earth porn"
-    return a
+    return self.getSubreddit('EarthPorn')
 
   def getCityPorn(self):
-    a = self.getRedditStuff("http://www.reddit.com/r/CityPorn/")
-    print "got city porn"
-    return a
+    return self.getSubreddit('CityPorn')
 
-  def getZelda(self):
-    url = "http://www.reddit.com/r/zelda/"
-    s = self.getFromReddit(url + '.rss')
-    poss = []; tab = '<item>'
-    while tab in s:
-      start = s.index(tab) + len(tab)
-      end = s.index('</item>', start)
-      part = s[start : end]
-      s = s[end:]
-      if not 'imgur' in part: continue
+  def getRedditApiUrl(self, subreddit):
+    return 'http://www.reddit.com/r/%s.json' % subreddit
 
-      # Find the imgur url
-      cut = part.index('imgur')
-      start = part.index('/', cut) + 1
-      end = start
-      while part[end] != '.' and part[end] != '&': end += 1
-      url = 'http://imgur.com/%s.jpg' % part[start : end]
-      isAlbum = False
-      if '/a/' in url:
-        url = url[:len(url) - 4]
-        isAlbum = True
+  def getSubreddit(self, subreddit):
+    for i in range(4):
+      try:
+        s = self.goToTheInternets(self.getRedditApiUrl(subreddit))
+        parsed = json.loads(s)
+        posts = parsed['data']['children']
+        break
+      except:
+        print 'ERROR for subreddit %s: %s' % (subreddit, s[:25])
+        time.sleep(SLEEP_TIME_ERROR)
 
-      # Find the title
-      ta = '<title>'
-      start = part.index(ta) + len(ta)
-      end = part.index('</title', start)
-      title = part[start : end].strip()
-
-      # Reddit link
-      ta = '<link>'
-      start = part.index(ta) + len(ta)
-      end = part.index("</", start)
-      link = part[start : end].strip()
-
-      # Append! (can call above code yay)
-      poss.append( (url, link, title, isAlbum) )
-    print 'got zelda %d %d' % (len(poss), len(s))
+    poss = []
+    for post in posts:
+      data = post['data']
+      if not 'url' in data: continue
+      (url, title, domain, perma) = \
+          (data['url'], data['title'], data['domain'], data['permalink'])
+      if 'self.' in domain: continue
+      if 'imgur' in domain and not '.' in url[len(url) - 4:]: url += '.jpg'
+      if not '.' in url[len(url) - 4:]: continue
+      perma = 'http://www.reddit.com%s' % perma
+      isAlbum = '/a/' in url or '/gallery/' in url
+      position = len(poss) + (100 if isAlbum else 0)
+      poss.append((url, perma, title, isAlbum, position))
+    poss.sort(key=lambda i: i[3])
+    poss = map(lambda i: i[:3], poss)
+    print 'got %s: %d stories' % (subreddit, len(poss))
     return self.convertRedditImgsToHtml(poss)
 
+  def getZelda(self):
+    return self.getSubreddit('zelda')
+
   def getPoke(self):
-    a = self.getRedditStuff("http://www.reddit.com/r/pokemon/")
-    print "got pokemon"
-    return a
+    return self.getSubreddit('pokemon')
 
   def getNatGeo(self):
     s = self.goToTheInternets(NAT_GEO_URL)
@@ -394,6 +269,7 @@ class HtmlFormer:
     title = self.getFormattedTitle('Today\'s National Geographic picture is...')
     it = '<a href="%s"><img src="%s" title="%s" width=300 /></a>'\
         % (img, img, caption)
+    print 'got natgeo'
     return '%s%s<br><br>%s' % (title, caption, it)
 
   def getTemplate(self):
@@ -416,9 +292,12 @@ class HtmlFormer:
 
     htmls = []
     for fn in fns:
-      ret = fn()
-      if type(ret) == type(''): htmls.append(ret)
-      else: htmls += ret
+      try:
+        ret = fn()
+        if type(ret) == type(''): htmls.append(ret)
+        else: htmls += ret
+      except:
+        pass
 
     # Starter html for top of page
     html = self.getTemplate()
