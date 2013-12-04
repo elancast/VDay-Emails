@@ -1,3 +1,5 @@
+# -*- coding: latin-1 -*-
+
 import os, sys
 import urllib
 import json
@@ -308,7 +310,7 @@ class HtmlFormer:
       html += '\n\n<tr style="vertical-align: top;">'
       for j in range(2):
         if i >= len(htmls): break
-        html += '\n<td style="width:300px;">%s</td>' % htmls[i]
+        html += '\n<td style="width:300px;">%s</td>' % htmls[i].decode('utf-8', 'ignore')
         i += 1
       html += '\n</tr>'
       self.html = html + '</table></tr></td></table>'
