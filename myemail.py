@@ -52,17 +52,10 @@ def getSubject():
   return '[VDay emails] Happy %s!' % date
 
 ## TEST ##
-if V2_TEST:
-  cnt = getSmtp('.shhhh')
-else:
-  cnt = getSmtp('/u/elancast/v/.shhhh')
+cnt = getSmtp('/u/elancast/v/.shhhh')
 (text, html) = getContent()
 msg = getmsg(text, html)
-
-if V2_TEST:
-  to = "Emily Lancaster <elancaster@fb.com>"
-else:
-  to = "Rafrafiraf Romero <rromero@fb.com>"
+to = "Rafrafiraf Romero <rromero@fb.com>"
 megmil = "Emily Lancaster <elancast0421@gmail.com>"
 me = "Emily Lancaster <elancast@cs.princeton.edu>"
 subj = getSubject()
