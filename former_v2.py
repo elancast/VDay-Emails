@@ -52,8 +52,8 @@ class HtmlFormerV2:
     if imagelink == None: imagelink = image
     s = self.template_item.replace('\\\\\\imagelink', imagelink)
     s = s.replace('\\\\\\image', image)
-    s = s.replace('\\\\\\title', perma)
-    return s.replace('\\\\\\text', subreddit)
+    s = s.replace('\\\\\\title', title)
+    return s.replace('\\\\\\text', text)
 
   def formEmail(self, bing, xkcd, weather, pun, content):
     s = self.template.replace('\\\\\\bing-link', bing['link'])
@@ -68,7 +68,7 @@ class HtmlFormerV2:
     return s.replace('\\\\\\content', content)
 
   ##############################################################################
-  # Parsing non-reddit websites
+  # Parsing non-reddit special content websites
   ##############################################################################
 
   def getBing(self):
@@ -159,6 +159,71 @@ class HtmlFormerV2:
     return s[start : end]
 
   ##############################################################################
+  # Non-reddit list content
+  ##############################################################################
+
+  def getAstronomy(self):
+    s = self.goToTheInternets(ASTRO_URL)
+
+    # If it's a video, no astronomy today
+    tag = 'IMG SRC="'
+    if not tag in s:
+      return ''
+
+    # Get the image
+    start = s.index(tag) + len(tag)
+    end = s.index('"', start)
+    url = s[start : end]
+    if not 'http://' in url: url = ASTRO_URL + url
+
+    # Get the short description
+    tag = '<b>'
+    start = s.index(tag, end) + len(tag)
+    end = s.index('<', start)
+    descr = s[start : end].strip()
+
+    # Get the date
+    start = s.index('?date=') + len('?date=')
+    end = s.index('"', start)
+    date = s[start : end]
+    perma = '%sap%s.html' % (ASTRO_URL, date)
+
+    # Also get some text about the image
+    desc = ''
+    marker = '<b> Explanation: </b>'
+    if marker in s:
+      start = s.index(marker) + len(marker)
+      end = s.index('Tomorrow\'s picture:', start)
+      desc = self.stripTags(s[start : end])
+      if '.' in desc:
+        desc = desc[:desc.index('.') + 1]
+      desc = '%s<br><br>' % desc
+
+    title = 'Today\'s astronomy picture shows %s' % descr
+    print 'got astronomy'
+    return self.formItem(url, title, desc, perma)
+
+  def getNatGeo(self):
+    s = self.goToTheInternets(NAT_GEO_URL)
+    s = s[s.index('primary_photo'):]
+
+    # The image
+    before = '<img src="'
+    start = s.index(before) + len(before)
+    after = s.index('"', start)
+    img = s[start:after]
+
+    # The caption
+    before = 'alt="'
+    start = s.index(before) + len(before)
+    end = s.index('"', start)
+    caption = s[start:end]
+
+    title = 'Today\'s National Geographic picture'
+    print 'got natgeo'
+    return self.formItem(img, title, caption, img)
+
+  ##############################################################################
   # Reddit
   ##############################################################################
 
@@ -166,6 +231,7 @@ class HtmlFormerV2:
     return 'http://www.reddit.com/r/%s.json' % subreddit
 
   def getSubreddit(self, subreddit):
+    posts = None
     for i in range(4):
       try:
         s = self.goToTheInternets(self.getRedditApiUrl(subreddit))
@@ -175,6 +241,7 @@ class HtmlFormerV2:
       except:
         print 'ERROR for subreddit %s: %s' % (subreddit, s[:25])
         time.sleep(SLEEP_TIME_ERROR)
+    if posts == None: return ''
 
     poss = []
     for post in posts:
@@ -202,6 +269,16 @@ class HtmlFormerV2:
   # Main
   ##############################################################################
 
+  def stripTags(self, s):
+    ret = []; i = 0
+    while i < len(s):
+      if s[i] == '<':
+        while i < len(s) and s[i] != '>': i += 1
+      else:
+        ret.append(s[i])
+      i += 1
+    return ''.join(ret).strip()
+
   def goToTheInternets(self, url, count = 1):
     time.sleep(SLEEP_TIME_BETWEEN)
     try:
@@ -214,12 +291,15 @@ class HtmlFormerV2:
 
   def getHTML(self):
     # Non-reddit content
-    # TODO
+    fns = [ self.getAstronomy, self.getNatGeo ]
+    nr_content = ''.join(map(lambda i: i(), fns))
 
     # Reddit
-    subreddits = [ 'aww', 'skyrim', 'earthporn' ]
-    subreddits = [ 'aww' ]
-    content = ''.join(map(lambda i: self.getSubreddit(i), subreddits))
+    subreddits = [
+      'skyrim', 'aww', 'zelda',
+      'cityporn', 'pokemon', 'earthporn'
+    ]
+    r_content = ''.join(map(lambda i: self.getSubreddit(i), subreddits))
 
     # Non-reddit special content
     bing = self.getBing()
@@ -227,6 +307,7 @@ class HtmlFormerV2:
     weather = self.getWeather()
     pun = self.getPun()
 
+    content = nr_content + r_content
     return self.formEmail(bing, xkcd, weather, pun, content)
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ import datetime
 from former import HtmlFormer
 from former_v2 import HtmlFormerV2
 
-V2_TEST = False
+V2_TEST = True
 
 def getmsg(text, html):
   p1 = MIMEText(text, "plain")
@@ -60,7 +60,7 @@ else:
 msg = getmsg(text, html)
 
 if V2_TEST:
-  to = "Emily Lancaster <elancast0421@gmail.com>"
+  to = "Emily Lancaster <elancaster@fb.com>"
 else:
   to = "Rafrafiraf Romero <rromero@fb.com>"
 megmil = "Emily Lancaster <elancast0421@gmail.com>"
