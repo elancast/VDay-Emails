@@ -4,6 +4,9 @@ from email.MIMEText import MIMEText
 import datetime
 
 from former import HtmlFormer
+from former_v2 import HtmlFormerV2
+
+V2_TEST = False
 
 def getmsg(text, html):
   p1 = MIMEText(text, "plain")
@@ -31,8 +34,12 @@ def getSmtp(file, host="smtp.cs.princeton.edu", port=587):
   return a
 
 def getContent():
-  former = HtmlFormer()
-  return ('', former.getHtml())
+  if V2_TEST:
+    former_v2 = HtmlFormerV2()
+    return ('', former_v2.getHTML())
+  else:
+    former = HtmlFormer()
+    return ('', former.getHtml())
 
 def sendit(smtp, msg, subject, to, fro, cc=None):
   addrs = setMeta(msg, subject, to, fro, cc)
@@ -45,10 +52,17 @@ def getSubject():
   return '[VDay emails] Happy %s!' % date
 
 ## TEST ##
-cnt = getSmtp('/u/elancast/v/.shhhh')
+if V2_TEST:
+  cnt = getSmtp('.shhhh')
+else:
+  cnt = getSmtp('/u/elancast/v/.shhhh')
 (text, html) = getContent()
 msg = getmsg(text, html)
-to = "Rafrafiraf Romero <rromero@fb.com>"
+
+if V2_TEST:
+  to = "Emily Lancaster <elancast0421@gmail.com>"
+else:
+  to = "Rafrafiraf Romero <rromero@fb.com>"
 megmil = "Emily Lancaster <elancast0421@gmail.com>"
 me = "Emily Lancaster <elancast@cs.princeton.edu>"
 subj = getSubject()
