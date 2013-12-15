@@ -91,6 +91,9 @@ class HtmlFormer:
   def getAww(self):
     return self.getSubreddit('aww')
 
+  def getSkyrim(self):
+    return self.getSubreddit('skyrim')
+
   """ Returns the bing picture """
   def getBing(self):
     s = self.goToTheInternets(BING_URL)
@@ -287,7 +290,7 @@ class HtmlFormer:
     fns = [
       self.getXkcdHtml, self.getBing,
       self.getAstronomy, self.getPun,
-      self.getNatGeo, self.getAww,
+      self.getNatGeo, self.getSkyrim, self.getAww,
       self.getZelda, self.getCityPorn,
       self.getPoke, self.getEarthPorn
     ]
