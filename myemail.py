@@ -9,8 +9,8 @@ from former_v2 import HtmlFormerV2
 V2_TEST = True
 
 def getmsg(text, html):
-  p1 = MIMEText(text, "plain")
-  p2 = MIMEText(html, "html")
+  p1 = MIMEText(text.encode('ascii', 'replace'), "plain")
+  p2 = MIMEText(html.encode('ascii', 'replace'), "html")
   msg = MIMEMultipart('alternative')
   msg.attach(p1)
   msg.attach(p2)

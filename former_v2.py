@@ -15,7 +15,7 @@ WEATHER_URL = 'http://www.weather.com/weather/tomorrow/San+Francisco+CA+94115:4:
 XKCD_URL = 'http://xkcd.com/'
 
 IMAGES_FROM_REDDIT = 3
-SLEEP_TIME_BETWEEN = 1
+SLEEP_TIME_BETWEEN = 3
 SLEEP_TIME_ERROR = 10
 
 class HtmlFormerV2:
@@ -28,15 +28,9 @@ class HtmlFormerV2:
   ##############################################################################
 
   def initTemplates(self):
-    f = open(TEMPLATE, 'r')
-    template = f.read()
-    f.close()
-    f = open(TEMPLATE_ITEM, 'r')
-    template_item = f.read()
-    f.close()
-    f = open(TEMPLATE_REDDIT, 'r')
-    template_reddit = f.read()
-    f.close()
+    template = self.readFile(TEMPLATE)
+    template_item = self.readFile(TEMPLATE_ITEM)
+    template_reddit = self.readFile(TEMPLATE_REDDIT)
     return (template, template_item, template_reddit)
 
   def formReddit(self, subreddit, user, image, text, perma, imagelink = None):
@@ -268,6 +262,13 @@ class HtmlFormerV2:
   ##############################################################################
   # Main
   ##############################################################################
+
+  def readFile(self, filename):
+    filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
+    f = open(filename, 'r')
+    s = f.read()
+    f.close()
+    return s
 
   def stripTags(self, s):
     ret = []; i = 0
