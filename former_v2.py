@@ -283,7 +283,11 @@ class HtmlFormerV2:
   def goToTheInternets(self, url, count = 1):
     time.sleep(SLEEP_TIME_BETWEEN)
     try:
-      return urllib.urlopen(url).read()
+      s = urllib.urlopen(url).read()
+      try:
+        return s.decode('utf-8', 'replace').encode('ascii', 'replace')
+      except:
+        return ''
     except:
       print 'CALL FAILED. RETRYING'
       if count > 4: return ''
