@@ -206,6 +206,8 @@ class HtmlFormerV2:
     start = s.index(before) + len(before)
     after = s.index('"', start)
     img = s[start:after]
+    while img.startswith('/'): img = img[1:]
+    img = 'http://' + img
 
     # The caption
     before = 'alt="'
