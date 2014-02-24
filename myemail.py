@@ -3,10 +3,7 @@ from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 import datetime
 
-from former import HtmlFormer
 from former_v2 import HtmlFormerV2
-
-V2_TEST = True
 
 def getmsg(text, html):
   p1 = MIMEText(text.encode('ascii', 'replace'), "plain")
@@ -34,12 +31,8 @@ def getSmtp(file, host="smtp.cs.princeton.edu", port=587):
   return a
 
 def getContent():
-  if V2_TEST:
-    former_v2 = HtmlFormerV2()
-    return ('', former_v2.getHTML())
-  else:
-    former = HtmlFormer()
-    return ('', former.getHtml())
+  former = HtmlFormerV2()
+  return ('', former.getHTML())
 
 def sendit(smtp, msg, subject, to, fro, cc=None):
   addrs = setMeta(msg, subject, to, fro, cc)
